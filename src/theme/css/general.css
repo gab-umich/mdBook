@@ -25,6 +25,10 @@ code {
     font-size: 0.875em; /* please adjust the ace font size accordingly in editor.js */
 }
 
+.hidden {
+    display:none;
+}
+
 .left { float: left; }
 .right { float: right; }
 .boring { opacity: 0.6; }

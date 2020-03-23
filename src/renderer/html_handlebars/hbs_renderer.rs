@@ -630,7 +630,7 @@ fn add_playpen_pre(html: &str, playpen_config: &Playpen) -> String {
                             } else {
                                 // we need to inject our own main
                                 let (attrs, code) = partition_source(code);
-
+                                
                                 format!(
                                     "\n# #![allow(unused_variables)]\n{}#fn main() {{\n{}#}}",
                                     attrs, code
@@ -638,7 +638,7 @@ fn add_playpen_pre(html: &str, playpen_config: &Playpen) -> String {
                                 .into()
                             };
                             hide_lines(&content)
-                        }
+                        },
                     )
                 } else {
                     format!("<code class=\"{}\">{}</code>", classes, hide_lines(code))
