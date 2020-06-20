@@ -43,6 +43,12 @@ use std::path::{Path, PathBuf};
 ///
 /// All other elements are unsupported and will be ignored at best or result in
 /// an error.
+/// 
+// struct SummaryParser<'a> {
+// src: &'a str,
+// stream: pulldown_cmark::OffsetIter<'a>,
+// offset: usize,
+// }
 pub fn parse_summary(summary: &str) -> Result<Summary> {
     let parser = SummaryParser::new(summary);
     parser.parse()
@@ -197,8 +203,9 @@ macro_rules! collect_events {
 
 impl<'a> SummaryParser<'a> {
     fn new(text: &str) -> SummaryParser<'_> {
+        // the whole SUMMARY.md is passed in as a string
         let pulldown_parser = pulldown_cmark::Parser::new(text).into_offset_iter();
-
+        // This crate provides a Parser struct which is an iterator over Events. This iterator can be used directly, or to output HTML using the HTML module.
         SummaryParser {
             src: text,
             stream: pulldown_parser,
@@ -220,6 +227,7 @@ impl<'a> SummaryParser<'a> {
     /// Parse the text the `SummaryParser` was created with.
     fn parse(mut self) -> Result<Summary> {
         let title = self.parse_title();
+        debug!("parse : parsed title is: {:?}", title);
 
         let prefix_chapters = self
             .parse_affix(true)
@@ -250,7 +258,9 @@ impl<'a> SummaryParser<'a> {
 
         loop {
             match self.next_event() {
+                //List is unordered List
                 Some(Event::Start(Tag::List(..))) => {
+                    debug!("parse_affix : finished prefix chapters");
                     if is_prefix {
                         // we've finished prefix chapters and are at the start
                         // of the numbered section.
@@ -261,9 +271,13 @@ impl<'a> SummaryParser<'a> {
                 }
                 Some(Event::Start(Tag::Link(_type, href, _title))) => {
                     let link = self.parse_link(href.to_string())?;
+                    debug!("parse_affix : parse link object {:?}", link);
                     items.push(SummaryItem::Link(link));
                 }
-                Some(Event::Rule) => items.push(SummaryItem::Separator),
+                Some(Event::Rule) => {
+                    debug!("parse_affix : parse rule object");
+                    items.push(SummaryItem::Separator);
+                }
                 Some(_) => {}
                 None => break,
             }
@@ -315,10 +329,12 @@ impl<'a> SummaryParser<'a> {
 
             match self.next_event() {
                 Some(Event::Start(Tag::Paragraph)) => {
+                    debug!("parse_numbered : finished parsing numbered");
                     // we're starting the suffix chapters
                     break;
                 }
                 Some(Event::Start(other_tag)) => {
+                    debug!("parse_numbered : other_tag");
                     trace!("Skipping contents of {:?}", other_tag);
 
                     // Skip over the contents of this tag
@@ -335,6 +351,7 @@ impl<'a> SummaryParser<'a> {
                     }
                 }
                 Some(Event::Rule) => {
+                    debug!("parse_numbered : Rule");
                     items.push(SummaryItem::Separator);
                     if let Some(Event::Start(Tag::List(..))) = self.next_event() {
                         continue;
@@ -361,6 +378,7 @@ impl<'a> SummaryParser<'a> {
             self.offset = range.start;
             ev
         });
+        debug!("next_event : next\n {:?}", next);
         trace!("Next event: {:?}", next);
 
         next
@@ -374,9 +392,12 @@ impl<'a> SummaryParser<'a> {
             match self.next_event() {
                 Some(Event::Start(Tag::Item)) => {
                     let item = self.parse_nested_item(parent, items.len())?;
+                    debug!("parse_nested_numbered : parse item object {:?}", item);
                     items.push(item);
                 }
                 Some(Event::Start(Tag::List(..))) => {
+                    debug!("parse_nested_numbered : parse list object");
+
                     // Skip this tag after comment bacause it is not nested.
                     if items.is_empty() {
                         continue;
@@ -444,7 +465,7 @@ impl<'a> SummaryParser<'a> {
     /// Try to parse the title line.
     fn parse_title(&mut self) -> Option<String> {
         if let Some(Event::Start(Tag::Heading(1))) = self.next_event() {
-            debug!("Found a h1 in the SUMMARY");
+            debug!("parse_title : Found a h1 in the SUMMARY");
 
             let tags = collect_events!(self.stream, end Tag::Heading(1));
             Some(stringify_events(tags))

@@ -18,6 +18,7 @@ mod cmd;
 const VERSION: &str = concat!("v", crate_version!());
 
 fn main() {
+    //initialize program logger
     init_logger();
 
     // Create a list of valid arguments and sub-commands
@@ -43,6 +44,8 @@ fn main() {
     let app = app.subcommand(cmd::serve::make_subcommand());
 
     // Check which subcomamnd the user ran...
+    // get_matches() runs the cli argument check
+    // fn subcommand(&self) -> (&str, Option<&ArgMatches<'a>>)
     let res = match app.get_matches().subcommand() {
         ("init", Some(sub_matches)) => cmd::init::execute(sub_matches),
         ("build", Some(sub_matches)) => cmd::build::execute(sub_matches),
