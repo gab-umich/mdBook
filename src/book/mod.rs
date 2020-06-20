@@ -19,6 +19,8 @@ use std::process::Command;
 use std::string::ToString;
 use tempfile::Builder as TempFileBuilder;
 use toml::Value;
+use std::collections::HashMap;
+use std::convert::TryInto;
 
 use crate::errors::*;
 use crate::preprocess::{
@@ -45,9 +47,12 @@ pub struct MDBook {
 
 impl MDBook {
     /// Load a book from its root directory on disk.
+    /// This function takes all argument that could potentially converted to a special type (here is PathBuf)
     pub fn load<P: Into<PathBuf>>(book_root: P) -> Result<MDBook> {
         let book_root = book_root.into();
+        // now book_root is PathBuf type
         let config_location = book_root.join("book.toml");
+        // Add to the end of book_root to make config_location the dir of "book.toml"
 
         // the book.json file is no longer used, so we should emit a warning to
         // let people know to migrate to book.toml
@@ -60,6 +65,7 @@ impl MDBook {
         }
 
         let mut config = if config_location.exists() {
+            // recompile time too long
             debug!("Loading config from {}", config_location.display());
             Config::from_disk(&config_location)?
         } else {
@@ -171,6 +177,11 @@ impl MDBook {
     }
 
     /// Tells the renderer to build our book and put it in the build directory.
+    /// enum Result <T, E> {
+    ///     OK(T),
+    ///     Err(E),
+    /// }
+    /// 
     pub fn build(&self) -> Result<()> {
         info!("Book building has started");
 
@@ -331,14 +342,17 @@ impl MDBook {
 /// Look at the `Config` and try to figure out what renderers to use.
 fn determine_renderers(config: &Config) -> Vec<Box<dyn Renderer>> {
     let mut renderers = Vec::new();
-
+    // and_then() avoid having <Option<Option<type>>>
     if let Some(output_table) = config.get("output").and_then(Value::as_table) {
         renderers.extend(output_table.iter().map(|(key, table)| {
             if key == "html" {
+                debug!("determine_renderers : key == html");
                 Box::new(HtmlHandlebars::new()) as Box<dyn Renderer>
             } else if key == "markdown" {
+                debug!("determine_renderers : key == markdown");
                 Box::new(MarkdownRenderer::new()) as Box<dyn Renderer>
             } else {
+                debug!("determine_renderers : cutomized renderer");
                 interpret_custom_renderer(key, table)
             }
         }));
@@ -346,9 +360,9 @@ fn determine_renderers(config: &Config) -> Vec<Box<dyn Renderer>> {
 
     // if we couldn't find anything, add the HTML renderer as a default
     if renderers.is_empty() {
+        debug!("determine_renderers : default renderer");
         renderers.push(Box::new(HtmlHandlebars::new()));
     }
-
     renderers
 }
 
@@ -369,11 +383,13 @@ fn determine_preprocessors(config: &Config) -> Result<Vec<Box<dyn Preprocessor>>
     let mut preprocessors = Vec::new();
 
     if config.build.use_default_preprocessors {
+        debug!("determine_preprocessors : use default preprocessor(link & index)");
         preprocessors.extend(default_preprocessors());
     }
 
     if let Some(preprocessor_table) = config.get("preprocessor").and_then(Value::as_table) {
         for key in preprocessor_table.keys() {
+            debug!("determine_preprocessors : {}", key);
             match key.as_ref() {
                 "links" => preprocessors.push(Box::new(LinkPreprocessor::new())),
                 "index" => preprocessors.push(Box::new(IndexPreprocessor::new())),

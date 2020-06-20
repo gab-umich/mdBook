@@ -92,7 +92,19 @@ impl Config {
             .chain_err(|| "Unable to open the configuration file")?
             .read_to_string(&mut buffer)
             .chain_err(|| "Couldn't read the file")?;
-
+        
+        debug!("buffer contain:\n{}", buffer);
+        //
+        // buffer contain: 
+        // [book]
+        // authors = ["haochenz"]
+        // language = "en"
+        // multilingual = false
+        // src = "src"
+        // title = "mod_theme_book"
+        // [output.html]
+        // theme = "src/theme"
+        //
         Config::from_str(&buffer)
     }
 
