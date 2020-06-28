@@ -327,6 +327,11 @@ impl<'a> SummaryParser<'a> {
             root_items += bunch_of_items.len() as u32;
             items.extend(bunch_of_items);
 
+
+            //===================== surfix parsing debug ====================
+            break;
+            //===============================================================
+
             match self.next_event() {
                 Some(Event::Start(Tag::Paragraph)) => {
                     debug!("parse_numbered : finished parsing numbered");
@@ -413,8 +418,14 @@ impl<'a> SummaryParser<'a> {
 
                     last_item.nested_items = sub_items;
                 }
+                //======================== surfix parse debug ========================
+                Some(Event::SoftBreak) => {
+                    debug!("softbreak found");
+                    break;
+                }
+                //====================================================================
                 Some(Event::End(Tag::List(..))) => break,
-                Some(_) => {}
+                Some(_) => { debug!{"doing nothing"};}
                 None => break,
             }
         }
@@ -427,6 +438,7 @@ impl<'a> SummaryParser<'a> {
         parent: &SectionNumber,
         num_existing_items: usize,
     ) -> Result<SummaryItem> {
+        debug!("start parse nested item");
         loop {
             match self.next_event() {
                 Some(Event::Start(Tag::Paragraph)) => continue,
