@@ -80,7 +80,9 @@
 //! [relevant chapter]: https://rust-lang.github.io/mdBook/for_developers/backends.html
 //! [`Config`]: config/struct.Config.html
 
+// ====================== for debug purposes =====================
 #![deny(missing_docs)]
+// ==============================================================
 #![deny(rust_2018_idioms)]
 
 #[macro_use]

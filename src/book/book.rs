@@ -19,6 +19,16 @@ pub fn load_book<P: AsRef<Path>>(src_dir: P, cfg: &BuildConfig) -> Result<Book> 
         .read_to_string(&mut summary_content)?;
 
     let summary = parse_summary(&summary_content).chain_err(|| "Summary parsing failed")?;
+    debug!("finished parsing summary\n {:?}", summary);
+
+    // parsing results:
+    // Summary { title: Some("Rust Visualization Survey"), 
+    // prefix_chapters: [Link(Link { name: "Introduction", location: "intro.md", number: None, nested_items: [] })], 
+    // numbered_chapters: [Link(Link { name: "Chapter 1", location: "chapter_1.md", number: Some(SectionNumber([1])), nested_items: [] }), 
+    // Link(Link { name: "Chapter 2", location: "chapter_2.md", number: Some(SectionNumber([2])), nested_items: [] }), 
+    // Link(Link { name: "Chapter 3", location: "chapter_3.md", number: Some(SectionNumber([3])), nested_items: [] })], 
+    // suffix_chapters: [Link(Link { name: "Conclusion", location: "conclude.md", number: None, nested_items: [] })] }
+
 
     if cfg.create_missing {
         create_missing(&src_dir, &summary).chain_err(|| "Unable to create missing chapters")?;
@@ -80,6 +90,14 @@ impl Book {
     pub fn new() -> Self {
         Default::default()
     }
+
+    //=================== for debug purposes =================
+    // pub fn print_sections(&self) -> () {
+    //     for chapter in self.sections.iter() {
+    //         debug!("{:?}", chapter);
+    //     }
+    // }
+    //=======================================================
 
     /// Get a depth-first iterator over the items in the book.
     pub fn iter(&self) -> BookItems<'_> {
@@ -180,7 +198,8 @@ impl Chapter {
 /// You need to pass in the book's source directory because all the links in
 /// `SUMMARY.md` give the chapter locations relative to it.
 pub(crate) fn load_book_from_disk<P: AsRef<Path>>(summary: &Summary, src_dir: P) -> Result<Book> {
-    debug!("Loading the book from disk");
+    debug!("loading book from disk");
+
     let src_dir = src_dir.as_ref();
 
     let prefix = summary.prefix_chapters.iter();
@@ -194,6 +213,12 @@ pub(crate) fn load_book_from_disk<P: AsRef<Path>>(summary: &Summary, src_dir: P)
     for summary_item in summary_items {
         let chapter = load_summary_item(summary_item, src_dir, Vec::new())?;
         chapters.push(chapter);
+    }
+
+    debug!("print book chapter\n");
+
+    for chapters in chapters.iter() {
+        debug!("{:?}\n", chapters);
     }
 
     Ok(Book {

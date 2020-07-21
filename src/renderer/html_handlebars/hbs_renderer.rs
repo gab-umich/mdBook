@@ -285,13 +285,13 @@ impl Renderer for HtmlHandlebars {
     fn name(&self) -> &str {
         "html"
     }
-
+    // this is where function is invoked
     fn render(&self, ctx: &RenderContext) -> Result<()> {
         let html_config = ctx.config.html_config().unwrap_or_default();
         let src_dir = ctx.root.join(&ctx.config.book.src);
         let destination = &ctx.destination;
         let book = &ctx.book;
-
+        
         if destination.exists() {
             utils::fs::remove_dir_content(destination)
                 .chain_err(|| "Unable to remove stale HTML output")?;
@@ -314,10 +314,16 @@ impl Renderer for HtmlHandlebars {
             );
             warn!("Please move your theme files to `./theme` for them to continue being used");
         }
-
+        
+        debug!("theme directory: {:?}", theme_dir);
         let theme = theme::Theme::new(theme_dir);
 
         debug!("Register the index handlebars template");
+        let file_addr = theme.index.clone();
+        // debug!("{:?}", file_addr);
+        let file = String::from_utf8(theme.index.clone())?;
+        // debug!("{:?}", file);
+
         handlebars.register_template_string("index", String::from_utf8(theme.index.clone())?)?;
 
         debug!("Register the header handlebars template");
@@ -531,7 +537,7 @@ fn make_data(
 
     data.insert("chapters".to_owned(), json!(chapters));
 
-    debug!("[*]: JSON constructed");
+    debug!("[*]:  55555555ucted");
     Ok(data)
 }
 

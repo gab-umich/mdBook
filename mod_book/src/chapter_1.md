@@ -1,3 +1,7 @@
+# Chapter 1
+
+this is chapter 1.
+
 ## Installation
 
 The first step to using Rust is to install it. You’ll need an internet

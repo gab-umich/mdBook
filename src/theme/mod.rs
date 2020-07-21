@@ -113,6 +113,17 @@ impl Theme {
 impl Default for Theme {
     fn default() -> Theme {
         Theme {
+            //
+            // to_owned create new allocated element 
+            // clone create another reference
+            // 
+            // let s: &str = "a";
+            // let ss: String = s.to_owned();
+
+            // let v: &[i32] = &[1, 2];
+            // let vv: Vec<i32> = v.to_owned();
+            //
+            //
             index: INDEX.to_owned(),
             header: HEADER.to_owned(),
             chrome_css: CHROME_CSS.to_owned(),

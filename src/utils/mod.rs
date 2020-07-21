@@ -1,5 +1,4 @@
 #![allow(missing_docs)] // FIXME: Document this
-
 pub mod fs;
 mod string;
 use crate::errors::Error;

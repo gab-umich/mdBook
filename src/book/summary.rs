@@ -331,48 +331,48 @@ impl<'a> SummaryParser<'a> {
             //===================== surfix parsing debug ====================
             break;
             //===============================================================
+            // match self.next_event() {
+            //     Some(Event::Start(Tag::Paragraph)) => {
+            //         debug!("parse_numbered : finished parsing numbered");
+            //         // we're starting the suffix chapters
+            //         break;
+            //     }
+            //     Some(Event::Start(other_tag)) => {
+            //         debug!("parse_numbered : other_tag");
+            //         trace!("Skipping contents of {:?}", other_tag);
 
-            match self.next_event() {
-                Some(Event::Start(Tag::Paragraph)) => {
-                    debug!("parse_numbered : finished parsing numbered");
-                    // we're starting the suffix chapters
-                    break;
-                }
-                Some(Event::Start(other_tag)) => {
-                    debug!("parse_numbered : other_tag");
-                    trace!("Skipping contents of {:?}", other_tag);
+            //         // Skip over the contents of this tag
+            //         while let Some(event) = self.next_event() {
+            //             if event == Event::End(other_tag.clone()) {
+            //                 break;
+            //             }
+            //         }
 
-                    // Skip over the contents of this tag
-                    while let Some(event) = self.next_event() {
-                        if event == Event::End(other_tag.clone()) {
-                            break;
-                        }
-                    }
-
-                    if let Some(Event::Start(Tag::List(..))) = self.next_event() {
-                        continue;
-                    } else {
-                        break;
-                    }
-                }
-                Some(Event::Rule) => {
-                    debug!("parse_numbered : Rule");
-                    items.push(SummaryItem::Separator);
-                    if let Some(Event::Start(Tag::List(..))) = self.next_event() {
-                        continue;
-                    } else {
-                        break;
-                    }
-                }
-                Some(_) => {
-                    // something else... ignore
-                    continue;
-                }
-                None => {
-                    // EOF, bail...
-                    break;
-                }
-            }
+            //         if let Some(Event::Start(Tag::List(..))) = self.next_event() {
+            //             continue;
+            //         } else {
+            //             break;
+            //         }
+            //     }
+            //     Some(Event::Rule) => {
+            //         debug!("parse_numbered : Rule");
+            //         items.push(SummaryItem::Separator);
+            //         if let Some(Event::Start(Tag::List(..))) = self.next_event() {
+            //             continue;
+            //         } else {
+            //             break;
+            //         }
+            //     }
+            //     Some(_) => {
+            //         // something else... ignore
+            //         continue;
+            //     }
+            //     None => {
+            //         // EOF, bail...
+            //         break;
+            //     }
+            // }
+            //===============================================================
         }
 
         Ok(items)

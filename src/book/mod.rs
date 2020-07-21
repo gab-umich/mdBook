@@ -200,15 +200,21 @@ impl MDBook {
             self.config.clone(),
             renderer.name().to_string(),
         );
-
+        // =============== runs without preprocessor lol =====================
         for preprocessor in &self.preprocessors {
             if preprocessor_should_run(&**preprocessor, renderer, &self.config) {
                 debug!("Running the {} preprocessor.", preprocessor.name());
                 preprocessed_book = preprocessor.run(&preprocess_ctx, preprocessed_book)?;
+                // ================== for debug purposes ==============
+                debug!("{:?} preprocessor result\n", preprocessor.name());
+                for chapter in preprocessed_book.sections.iter() {
+                    debug!("{:?}", chapter);
+                }
+                // ====================================================
             }
         }
 
-        info!("Running the {} backend", renderer.name());
+        info!("Running the {} backend, start rendering", renderer.name());
         self.render(&preprocessed_book, renderer)?;
 
         Ok(())
@@ -220,8 +226,11 @@ impl MDBook {
 
         let render_context = RenderContext::new(
             self.root.clone(),
+            // the book's root directory
             preprocessed_book.clone(),
+            // the loaded config file 
             self.config.clone(),
+            // for renderer to put intermediate results not that important
             build_dir,
         );
 
