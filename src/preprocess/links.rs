@@ -23,7 +23,7 @@ const MAX_LINK_NESTED_DEPTH: usize = 10;
 ///   This hides the lines from initial display but shows them when the reader expands the code
 ///   block and provides them to Rustdoc for testing.
 /// - `{{# playpen}}` - Insert runnable Rust files
-#[derive(Default)]
+#[derive(Default, Copy, Clone)]
 pub struct LinkPreprocessor;
 
 impl LinkPreprocessor {
@@ -50,7 +50,7 @@ impl Preprocessor for LinkPreprocessor {
                     .parent()
                     .map(|dir| src_dir.join(dir))
                     .expect("All book items have a parent");
-
+                debug!("replace for a new Chapter");
                 let content = replace_all(&ch.content, base, &ch.path, 0);
                 ch.content = content;
             }
@@ -65,24 +65,47 @@ where
     P1: AsRef<Path>,
     P2: AsRef<Path>,
 {
+    // pub struct Chapter {
+    //     /// The chapter's name.
+    //     pub name: String,
+    //     /// The chapter's contents.
+    //     pub content: String,
+    //     /// The chapter's section number, if it has one.
+    //     pub number: Option<SectionNumber>,
+    //     /// Nested items.
+    //     pub sub_items: Vec<BookItem>,
+    //     /// The chapter's location, relative to the `SUMMARY.md` file.
+    //     pub path: PathBuf,
+    //     /// An ordered list of the names of each chapter above this one, in the hierarchy.
+    //     pub parent_names: Vec<String>,
+    // }
+    debug!("start replacing all content process");
     // When replacing one thing in a string by something with a different length,
     // the indices after that will not correspond,
     // we therefore have to store the difference to correct this
     let path = path.as_ref();
     let source = source.as_ref();
+    debug!("calling replace_all function");
+    debug!("Base path: {}", path.display().to_string());
+    debug!("Base path: {}", source.display().to_string());
     let mut previous_end_index = 0;
     let mut replaced = String::new();
 
     for link in find_links(s) {
-        replaced.push_str(&s[previous_end_index..link.start_index]);
-
+        let spush = &s[previous_end_index..link.start_index];
+        replaced.push_str(spush);
+        debug!("push string before finding link: {}", spush);
         match link.render_with_path(&path) {
             Ok(new_content) => {
                 if depth < MAX_LINK_NESTED_DEPTH {
                     if let Some(rel_path) = link.link_type.relative_path(path) {
-                        replaced.push_str(&replace_all(&new_content, rel_path, source, depth + 1));
+                        let pstring = replace_all(&new_content, rel_path, source, depth + 1);
+                        replaced.push_str(&pstring);
+                        // replaced.push_str(&replace_all(&new_content, rel_path, source, depth + 1));
+                        debug!("push string relative path exist: {}", pstring);
                     } else {
                         replaced.push_str(&new_content);
+                        debug!("push string relative path doesn't exist : {}", new_content);
                     }
                 } else {
                     error!(
@@ -106,6 +129,8 @@ where
     }
 
     replaced.push_str(&s[previous_end_index..]);
+    debug!("push last string: {}", &s[previous_end_index..]);
+    debug!("return replaced string: {}", replaced);
     replaced
 }
 
@@ -255,10 +280,12 @@ impl<'a> Link<'a> {
     fn from_capture(cap: Captures<'a>) -> Option<Link<'a>> {
         let link_type = match (cap.get(0), cap.get(1), cap.get(2)) {
             (_, Some(typ), Some(rest)) => {
+                debug!("cap.get(1) result: {}", cap.get(1).unwrap().as_str());
+                debug!("cap.get(2) result: {}", cap.get(2).unwrap().as_str());
                 let mut path_props = rest.as_str().split_whitespace();
                 let file_arg = path_props.next();
                 let props: Vec<&str> = path_props.collect();
-
+                debug!("file_arg is: {}", file_arg.unwrap());
                 match (typ.as_str(), file_arg) {
                     ("include", Some(pth)) => Some(parse_include_path(pth)),
                     ("playpen", Some(pth)) => Some(LinkType::Playpen(pth.into(), props)),

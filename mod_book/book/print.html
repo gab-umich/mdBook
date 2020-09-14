@@ -230,6 +230,24 @@ browser.</p>
 not sure what it does, use the API documentation to find out!</p>
 <h1><a class="header" href="#chapter-2" id="chapter-2">Chapter 2</a></h1>
 <p>this is chapter 2. loll</p>
+<h2><a class="header" href="#inserting-runnable-rust-files" id="inserting-runnable-rust-files">Inserting runnable Rust files</a></h2>
+<p>With the following syntax, you can insert runnable Rust files into your book:</p>
+<pre><code class="language-hbs">{{#playpen file.rs}}
+</code></pre>
+<p>The path to the Rust file has to be relative from the current source file.</p>
+<p>When play is clicked, the code snippet will be sent to the <a href="https://play.rust-lang.org/">Rust Playpen</a> to be
+compiled and run. The result is sent back and displayed directly underneath the
+code.</p>
+<p>Here is what a rendered code snippet looks like:</p>
+<pre><pre class="playpen"><code class="language-rust">fn main() {
+    let x = add_one(2);
+    assert_eq!(x, 3);
+}
+
+fn add_one(num: i32) -&gt; i32 {
+    num + 1
+}
+</code></pre></pre>
 <h1><a class="header" href="#chapter-3" id="chapter-3">Chapter 3</a></h1>
 <p>this is chapter 3.</p>
 <h1><a class="header" href="#conclusion" id="conclusion">Conclusion</a></h1>

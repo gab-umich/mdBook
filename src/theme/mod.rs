@@ -140,7 +140,7 @@ impl Default for Theme {
         }
     }
 }
-
+// use Result<()> as 
 /// Checks if a file exists, if so, the destination buffer will be filled with
 /// its contents.
 fn load_file_contents<P: AsRef<Path>>(filename: P, dest: &mut Vec<u8>) -> Result<()> {

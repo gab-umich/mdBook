@@ -33,13 +33,16 @@ impl HtmlHandlebars {
         if let BookItem::Chapter(ref ch) = *item {
             let content = ch.content.clone();
             let content = utils::render_markdown(&content, ctx.html_config.curly_quotes);
-
+            debug!("print content");
+            debug!("{}", content);
             let fixed_content = utils::render_markdown_with_path(
                 &ch.content,
                 ctx.html_config.curly_quotes,
                 Some(&ch.path),
             );
             print_content.push_str(&fixed_content);
+            debug!("print fix content");
+            debug!("{}", print_content);
 
             // Update the context with data for this file
             let path = ch
@@ -323,17 +326,21 @@ impl Renderer for HtmlHandlebars {
         // debug!("{:?}", file_addr);
         let file = String::from_utf8(theme.index.clone())?;
         // debug!("{:?}", file);
-
+        
+        // registered "index" to be the index.hbs template
         handlebars.register_template_string("index", String::from_utf8(theme.index.clone())?)?;
 
+        // registered "header" to be the header.hbs template
         debug!("Register the header handlebars template");
         handlebars.register_partial("header", String::from_utf8(theme.header.clone())?)?;
 
         debug!("Register handlebars helpers");
+        // registered helpers in handlebar
         self.register_hbs_helpers(&mut handlebars, &html_config);
 
         let mut data = make_data(&ctx.root, &book, &ctx.config, &html_config)?;
-
+        debug!("print data map for handlebar");
+        debug!("{:?}", data);
         // Print version
         let mut print_content = String::new();
 

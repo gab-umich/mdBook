@@ -176,6 +176,8 @@ pub fn new_cmark_parser(text: &str) -> Parser<'_> {
 }
 
 pub fn render_markdown_with_path(text: &str, curly_quotes: bool, path: Option<&Path>) -> String {
+    debug!("render markdown");
+    debug!("{}", text);
     let mut s = String::with_capacity(text.len() * 3 / 2);
     let p = new_cmark_parser(text);
     let mut converter = EventQuoteConverter::new(curly_quotes);
@@ -183,7 +185,6 @@ pub fn render_markdown_with_path(text: &str, curly_quotes: bool, path: Option<&P
         .map(clean_codeblock_headers)
         .map(|event| adjust_links(event, path))
         .map(|event| converter.convert(event));
-
     html::push_html(&mut s, events);
     s
 }
